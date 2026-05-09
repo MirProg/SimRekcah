@@ -46,3 +46,6 @@ Rekcah.Core/obj/
 UnrealProject/Intermediate/
 UnrealProject/Binaries/
 UnrealProject/Saved/
+rekcah-core/target/
+target/
+*.db
