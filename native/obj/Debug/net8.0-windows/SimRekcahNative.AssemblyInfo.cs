@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SimRekcahNative")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+40d9b94e2247817df88c1aa85a7c4ee2b031e427")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+72c167e2939281d896cfd684bb33259c5047fcc9")]
 [assembly: System.Reflection.AssemblyProductAttribute("SimRekcahNative")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SimRekcahNative")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
