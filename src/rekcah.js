@@ -357,8 +357,7 @@ export class RekcahMatch {
   }
 
   drawFromDiscard() {
-    if (this.phase !== "draw") throw new Error("Take the last discard, or draw from stock to begin your turn.");
-    if (this.drawnCard) return "Show now if your hand is 15 or less, or discard one legal group.";
+    if (this.phase !== "draw") throw new Error("A player can only draw when the turn asks for a draw.");
     const card = this.discardPile.pop();
     if (!card) throw new Error("The discard pile is empty.");
     this.drawnCard = card;
@@ -389,13 +388,13 @@ export class RekcahMatch {
   }
 
   canShow(player = this.currentPlayer()) {
-    return this.phase === "action" && !!this.drawnCard && handValue(this.availableCards(player)) <= this.rules.showThreshold;
+    return this.phase === "draw" && !this.drawnCard && handValue(player.hand) <= this.rules.showThreshold;
   }
 
   show() {
-    if (!this.canShow()) throw new Error("Show is only legal on your turn after drawing with 15 points or less.");
+    if (!this.canShow()) throw new Error("Show is only legal at the start of your turn with 15 points or less.");
     const caller = this.currentPlayer();
-    const callerValue = handValue(this.availableCards(caller));
+    const callerValue = handValue(caller.hand);
     const opponents = this.activePlayers().filter((player) => player.id !== caller.id);
     const lowestOpponent = Math.min(...opponents.map((player) => handValue(player.hand)));
     const success = callerValue < lowestOpponent;
@@ -510,16 +509,14 @@ export function chooseAiMove(match, player) {
   };
 
   if (match.phase === "draw") {
+    if (context.handValue <= match.rules.showThreshold && profile.show(context)) {
+      return { type: "show" };
+    }
     const top = match.topDiscard();
     if (top && shouldTakeDiscard(profile, player.hand, top)) {
       return { type: "draw-discard" };
     }
     return { type: "draw-stock" };
-  }
-
-  const currentHandValue = handValue(match.availableCards(player));
-  if (match.phase === "action" && match.drawnCard && currentHandValue <= match.rules.showThreshold && profile.show({ ...context, handValue: currentHandValue })) {
-    return { type: "show" };
   }
 
   const discard = chooseDiscard(profile, match.availableCards(player));

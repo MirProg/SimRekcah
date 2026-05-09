@@ -184,8 +184,8 @@ function describeTurn(snapshot) {
   if (snapshot.phase === "game-over") return `${snapshot.winner?.label || "A player"} has survived the table.`;
   if (snapshot.phase === "round-over") return "Scoring is complete. Starting the next round.";
   if (snapshot.players[snapshot.currentPlayerIndex].agentId !== "human") return "AI is choosing whether to show, draw, or discard.";
-  if (snapshot.phase === "draw") return "Take the last discard, or draw from stock to begin your turn.";
-  if (snapshot.drawnCard) return "Show now if your hand is 15 or less, or discard one legal group.";
+  if (snapshot.phase === "draw") return "Show now if your hand is 15 or less, or draw to begin your turn.";
+  if (snapshot.drawnCard) return "Discard one legal group. The drawn card can be used or kept after the discard.";
   return "Waiting for turn.";
 }
 
@@ -218,7 +218,7 @@ function renderPiles(snapshot) {
 function renderHand(player, snapshot = state.match.snapshot()) {
   els.humanHand.innerHTML = "";
   els.incomingCard.innerHTML = "";
-  els.handValue.textContent = handValue(snapshot.players[snapshot.currentPlayerIndex].id === player.id ? snapshot.availableCards || [] : player.hand);
+  els.handValue.textContent = handValue(player.hand);
   els.incomingZone.hidden = !snapshot.drawnCard || snapshot.players[snapshot.currentPlayerIndex].agentId !== "human";
   if (!els.incomingZone.hidden) {
     const incomingNode = createCard(snapshot.drawnCard);
@@ -285,7 +285,7 @@ function updateButtons(snapshot) {
   const human = snapshot.players[0];
   const availableCards = humanTurn ? state.match.availableCards(human) : human.hand;
   const selectedCards = availableCards.filter((card) => state.selected.has(card.id));
-  els.showButton.disabled = !(humanTurn && snapshot.phase === "action" && snapshot.drawnCard && handValue(availableCards) <= snapshot.rules.showThreshold);
+  els.showButton.disabled = !(humanTurn && snapshot.phase === "draw" && !snapshot.drawnCard && handValue(human.hand) <= snapshot.rules.showThreshold);
   els.discardButton.disabled = !(humanTurn && snapshot.phase === "action" && snapshot.drawnCard && isValidDiscardGroup(selectedCards));
 }
 
