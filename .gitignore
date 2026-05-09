@@ -1,0 +1,48 @@
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docattachments.res
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docattachments.res
+
+# Unreal Engine
+Intermediate/
+Saved/
+DerivedDataCache/
+Build/
+Binaries/
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.sln
+*.suo
+*.xcodeproj
+*.xcworkspace
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+build/
+dist/
+
+# Rekcah Specific
+native/bin/
+native/obj/
+Rekcah.Core/bin/
+Rekcah.Core/obj/
+UnrealProject/Intermediate/
+UnrealProject/Binaries/
+UnrealProject/Saved/
