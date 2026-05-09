@@ -191,11 +191,20 @@ export function handValue(hand) {
 export function isValidDiscardGroup(cards, rules = RULES) {
   if (!cards.length) return false;
   if (cards.length === 1) return true;
-  const nonJokers = cards.filter((card) => card.rank !== "Joker");
-  if (nonJokers.length !== cards.length) return false;
-  if (cards.every((card) => card.rank === cards[0].rank)) return cards.length >= 2;
+  
+  // Sets: 2+ cards of the same rank
+  if (cards.every((card) => card.rank === cards[0].rank)) {
+    return cards.length >= 2;
+  }
+
+  // Sequences: Minimum length, same suit, strictly consecutive
   if (cards.length < rules.minSequence || cards.length > rules.maxSequence) return false;
+  
+  // Jokers cannot be part of a sequence in this ruleset
+  if (cards.some(card => card.rank === "Joker")) return false;
+  
   if (!cards.every((card) => card.suit === cards[0].suit)) return false;
+  
   const ordered = sortCards(cards);
   for (let index = 1; index < ordered.length; index += 1) {
     if (RANK_ORDER.get(ordered[index].rank) !== RANK_ORDER.get(ordered[index - 1].rank) + 1) {
@@ -311,7 +320,7 @@ export class RekcahMatch {
     this.drawPile = deck;
     const firstActive = this.players.findIndex((player) => !player.eliminated);
     this.currentPlayerIndex = firstActive;
-    this.phase = "action";
+    this.phase = "draw";
     this.addLog(`Round ${this.roundNumber} begins. ${this.players[this.currentPlayerIndex].label} leads.`);
   }
 
@@ -348,7 +357,8 @@ export class RekcahMatch {
   }
 
   drawFromDiscard() {
-    if (this.phase !== "draw") throw new Error("A player can only draw when the turn asks for a draw.");
+    if (this.phase !== "draw") throw new Error("Take the last discard, or draw from stock to begin your turn.");
+    if (this.drawnCard) return "Show now if your hand is 15 or less, or discard one legal group.";
     const card = this.discardPile.pop();
     if (!card) throw new Error("The discard pile is empty.");
     this.drawnCard = card;
@@ -379,13 +389,13 @@ export class RekcahMatch {
   }
 
   canShow(player = this.currentPlayer()) {
-    return (this.phase === "action" || this.phase === "draw") && !this.drawnCard && handValue(player.hand) <= this.rules.showThreshold;
+    return this.phase === "action" && !!this.drawnCard && handValue(this.availableCards(player)) <= this.rules.showThreshold;
   }
 
   show() {
-    if (!this.canShow()) throw new Error("Show is only legal on your turn with 15 points or less.");
+    if (!this.canShow()) throw new Error("Show is only legal on your turn after drawing with 15 points or less.");
     const caller = this.currentPlayer();
-    const callerValue = handValue(caller.hand);
+    const callerValue = handValue(this.availableCards(caller));
     const opponents = this.activePlayers().filter((player) => player.id !== caller.id);
     const lowestOpponent = Math.min(...opponents.map((player) => handValue(player.hand)));
     const success = callerValue < lowestOpponent;
@@ -478,6 +488,7 @@ export class RekcahMatch {
       phase: this.phase,
       topDiscard: this.topDiscard(),
       drawnCard: this.drawnCard,
+      availableCards: this.availableCards(),
       drawCount: this.drawPile.length,
       discardCount: this.discardPile.length,
       log: this.log,
@@ -498,16 +509,17 @@ export function chooseAiMove(match, player) {
     showThreshold: match.rules.showThreshold
   };
 
-  if (!match.drawnCard && context.handValue <= match.rules.showThreshold && profile.show(context)) {
-    return { type: "show" };
-  }
-
   if (match.phase === "draw") {
     const top = match.topDiscard();
     if (top && shouldTakeDiscard(profile, player.hand, top)) {
       return { type: "draw-discard" };
     }
     return { type: "draw-stock" };
+  }
+
+  const currentHandValue = handValue(match.availableCards(player));
+  if (match.phase === "action" && match.drawnCard && currentHandValue <= match.rules.showThreshold && profile.show({ ...context, handValue: currentHandValue })) {
+    return { type: "show" };
   }
 
   const discard = chooseDiscard(profile, match.availableCards(player));
