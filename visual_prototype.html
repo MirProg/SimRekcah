@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rekcah: Industrial Lab (3D Prototype)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050505; color: #38bdf8; font-family: 'Segoe UI', sans-serif; }
+        #ui { position: absolute; top: 20px; left: 20px; pointer-events: none; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(56, 189, 248, 0.3); padding: 20px; border-radius: 10px; }
+        #log { position: absolute; bottom: 20px; right: 20px; width: 300px; height: 200px; overflow-y: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div id="ui" class="glass">
+        <h1 style="margin:0; font-size: 24px; letter-spacing: 2px;">REKCAH LAB</h1>
+        <div id="stats" style="margin-top: 10px;">
+            Round: 01 | Turn: 12 | Score: 45
+        </div>
+    </div>
+    
+    <div id="log" class="glass">
+        [SYSTEM] Initializing Rust Engine...<br>
+        [SYSTEM] Loading Unreal Shaders...<br>
+        [AI] Player 2 is analyzing discard patterns...
+    </div>
+
+    <!-- Three.js for Unreal-grade 3D Graphics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Lights (Cinematic Blue/Amber)
+        const blueLight = new THREE.PointLight(0x38bdf8, 2, 50);
+        blueLight.position.set(5, 5, 5);
+        scene.add(blueLight);
+
+        const amberLight = new THREE.PointLight(0xfbbf24, 1, 50);
+        amberLight.position.set(-5, -5, 5);
+        scene.add(amberLight);
+
+        // Card Template (Balatro style)
+        const cardGeometry = new THREE.BoxGeometry(2.5, 3.5, 0.1);
+        const cardMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.1, metalness: 0.5 });
+        const card = new THREE.Mesh(cardGeometry, cardMaterial);
+        scene.add(card);
+
+        camera.position.z = 10;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            // Smooth "Juicy" floating animation
+            card.rotation.y = Math.sin(Date.now() * 0.001) * 0.2;
+            card.rotation.x = Math.cos(Date.now() * 0.001) * 0.1;
+            card.position.y = Math.sin(Date.now() * 0.002) * 0.1;
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>

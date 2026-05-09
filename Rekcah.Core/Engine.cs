@@ -125,7 +125,15 @@ namespace Rekcah.Core
 
             foreach (var p in Players.Where(p => !p.Eliminated))
             {
-                int delta = (p.Id == caller.Id) ? (success ? Rules.SuccessReward : Rules.FailedShowPenalty) : p.HandValue;
+                int delta;
+                if (p.Id == caller.Id)
+                {
+                    delta = success ? Rules.SuccessReward : (callerValue + Rules.FailedShowPenalty);
+                }
+                else
+                {
+                    delta = p.HandValue;
+                }
                 p.Score += delta;
             }
 

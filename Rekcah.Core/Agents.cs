@@ -29,8 +29,15 @@ namespace Rekcah.Core
     public class AggressiveAgent : BaseAgent
     {
         public override string Id => "aggressive";
-        public override bool ShouldShow(RekcahMatch match, PlayerState player) => player.HandValue <= match.Rules.ShowThreshold;
+        public override bool ShouldShow(RekcahMatch match, PlayerState player) => player.HandValue <= 15;
         public override bool ShouldTakeDiscard(RekcahMatch match, PlayerState player, Card topDiscard) => topDiscard.Value <= 5;
+    }
+
+    public class ConservativeAgent : BaseAgent
+    {
+        public override string Id => "conservative";
+        public override bool ShouldShow(RekcahMatch match, PlayerState player) => player.HandValue <= 5;
+        public override bool ShouldTakeDiscard(RekcahMatch match, PlayerState player, Card topDiscard) => topDiscard.Value <= 0; // Only take Jokers
     }
 
     public class BalancedAgent : BaseAgent
@@ -39,10 +46,21 @@ namespace Rekcah.Core
         public override bool ShouldShow(RekcahMatch match, PlayerState player)
         {
             int turn = match.TurnNumber / match.Players.Count(p => !p.Eliminated);
-            if (turn <= 2) return player.HandValue <= match.Rules.ShowThreshold;
-            if (turn <= 5) return player.HandValue <= 10;
-            return player.HandValue <= 5;
+            if (turn <= 2) return player.HandValue <= 15;
+            if (turn <= 4) return player.HandValue <= 12;
+            return player.HandValue <= 8;
         }
         public override bool ShouldTakeDiscard(RekcahMatch match, PlayerState player, Card topDiscard) => topDiscard.Value <= 3;
+    }
+
+    public class ThresholdAwareAgent : BaseAgent
+    {
+        public override string Id => "threshold_aware";
+        public override bool ShouldShow(RekcahMatch match, PlayerState player)
+        {
+            if (player.Score >= 90) return player.HandValue <= 0; // Absolute Lockout
+            return player.HandValue <= (player.Score >= 80 ? 10 : 15);
+        }
+        public override bool ShouldTakeDiscard(RekcahMatch match, PlayerState player, Card topDiscard) => topDiscard.Value <= 5;
     }
 }
